@@ -1,5 +1,6 @@
 from typing import Annotated
 import pika
+import uvicorn
 from fastapi import Depends, FastAPI
 from db.database import Base
 from db.database import engine, SessionLocal
@@ -10,15 +11,14 @@ Base.metadata.create_all(bind=engine)
 connection = pika.BlockingConnection(parameters=pika.ConnectionParameters('localhost', port=5672))
 channel = connection.channel()
 
+
 @app.post('/jobs/reports')
 def send_job():
     channel.queue_declare('fastapi')
     channel.basic_publish(exchange='', routing_key='fastapi', body="this is test 12 body")
     print("task sent!")
     return "task sent"
-    # connection.close()
 
-# send_job()
 
 def get_db():
     db = SessionLocal()
@@ -27,4 +27,5 @@ def get_db():
     except:
         db.close()
 
-db_dependecies = Annotated[Session, Depends(get_db)]
+
+db_dependencies = Annotated[Session, Depends(get_db)]
